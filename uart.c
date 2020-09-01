@@ -3,7 +3,6 @@
 
 #include "uart.h"
 
-static int TRANSMIT_MESSAGE_BUF;
 
 void init_uart(void (*f)(int)) {
     select_clock_signals();          // Assigns microcontroller clock signals
@@ -14,8 +13,11 @@ void init_uart(void (*f)(int)) {
     RECEIVE_FUNCTION_POINTER = f;
 }
 
+static int TRANSMIT_MESSAGE_BUF;
+
 void transmit_message(int message) {
-    UCA3TXBUF = message;                // Send the UART message 0x56out pin P4.2
+    TRANSMIT_MESSAGE_BUF = message & 0x00FF;
+    UCA3TXBUF = message & 0xFF00;                // Send the UART message 0x56out pin P4.2
 }
 
 void select_clock_signals(void) {
@@ -55,24 +57,25 @@ __interrupt void UART_ISR(void)
         else previous_message = UCA3RXBUF;
     }
     else if (UART_MODE == TRANSMIT && UCA3RXBUF == 0x00) {
-        if (TRANSMIT_MESSAGE_BUF != NULL)
+        if (TRANSMIT_MESSAGE_BUF != NULL) {
             UCA3TXBUF = TRANSMIT_MESSAGE_BUF;
-        else
-            printf("DUPA \n");
+            TRANSMIT_MESSAGE_BUF = NULL;
+        }
+        else printf("DUPA \n");
     }
 
-    if(UCA3RXBUF == 0x56) {            // Check to see if the message is 0x56
-        P1OUT = BIT0;// Turn on the redLED
-        UCA3TXBUF = 0x00;
-    }
-    else if (UCA3RXBUF == 0x00) {
-        P1OUT = 0x00;
-        UCA3TXBUF = 0x72;
-    }
-    else if (UCA3RXBUF == 0x72) {
-        P1OUT = BIT0;
-        UCA3TXBUF = 0x00;
-    }
+//    if(UCA3RXBUF == 0x56) {            // Check to see if the message is 0x56
+//        P1OUT = BIT0;// Turn on the redLED
+//        UCA3TXBUF = 0x00;
+//    }
+//    else if (UCA3RXBUF == 0x00) {
+//        P1OUT = 0x00;
+//        UCA3TXBUF = 0x72;
+//    }
+//    else if (UCA3RXBUF == 0x72) {
+//        P1OUT = BIT0;
+//        UCA3TXBUF = 0x00;
+//    }
 
 //    if (UART_MODE == RECEIVE) {
 //        printf("CHUJ \n");

@@ -22,7 +22,7 @@ int main(void)
     _BIS_SR(GIE);                    // Activate enabled UART RXD interrupt
 
 
-    transmit_message(0x56);
+    transmit_message(0x5634);
 
 
     while(1);                        // Wait here unless you get UART interrupt}
